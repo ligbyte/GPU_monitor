@@ -18,7 +18,7 @@ PyInstaller 的核心逻辑只有一句：**在目标系统上，把 Python 解�
 ### 1. 装（强烈建议用干净虚拟环境）
 
 ```bash
-python -m pip install pyinstaller
+pip install pyinstaller
 pyinstaller --version     # 当前为 6.x，支持 Python 3.8+
 ```
 
