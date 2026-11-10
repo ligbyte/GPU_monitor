@@ -27,7 +27,7 @@ def project_root() -> Path:
 
 
 def launcher_script() -> Path:
-    return project_root() / "run.py"
+    return project_root() / "main.py"
 
 
 def python_executable() -> list[str]:

@@ -17,8 +17,8 @@ from PySide6.QtCore import QRectF, Qt, QTimer
 from PySide6.QtGui import QColor, QFont, QGuiApplication, QPainter
 from PySide6.QtWidgets import QWidget
 
-from .hardware import format_percent, format_temp
-from .widgets import severity_color, temp_color
+from .hardware import format_percent
+from .widgets import severity_color
 
 IS_WINDOWS = platform.system() == "Windows"
 
@@ -108,7 +108,7 @@ def _find_tray_notify(taskbar_hwnd: int) -> _RECT | None:
 
 
 class TaskbarWidget(QWidget):
-    """Compact 'RTX 5060 4% 49°C 显存 26% | CPU 0% | 内存 48%' readout."""
+    """Compact 'GPU 4% | CPU 0% | 内存 48%' readout."""
 
     def __init__(self, config: dict, dark_taskbar: bool = True, on_click=None, on_menu=None) -> None:
         super().__init__(None)
@@ -160,24 +160,14 @@ class TaskbarWidget(QWidget):
         sample = self._sample
         items: list[tuple[str, str, str]] = []
 
+        cpu = sample.get("cpu", {}) or {}
+        items.append(("CPU", format_percent(cpu.get("percent", -1)), severity_color(cpu.get("percent", -1))))
+
         gpus = sample.get("gpus") or []
         if gpus:
             gpu = gpus[0]
             util = gpu.get("utilization", -1)
-            name = gpu.get("name") or "GPU"
-            short = name.replace("NVIDIA GeForce", "").strip() or "GPU"
-            if len(short) > 22:
-                short = short[:21] + "…"
-            items.append((short, format_percent(util), severity_color(util)))
-            temperature = gpu.get("temperature", -1)
-            if temperature is not None and temperature >= 0:
-                items.append(("", format_temp(temperature), temp_color(temperature)))
-            memory = gpu.get("memory_percent", -1)
-            if memory is not None and memory >= 0:
-                items.append(("显存", format_percent(memory), severity_color(memory)))
-
-        cpu = sample.get("cpu", {}) or {}
-        items.append(("CPU", format_percent(cpu.get("percent", -1)), severity_color(cpu.get("percent", -1))))
+            items.append(("GPU", format_percent(util), severity_color(util)))
 
         ram = sample.get("ram", {}) or {}
         items.append(("内存", format_percent(ram.get("percent", -1)), severity_color(ram.get("percent", -1))))
@@ -262,7 +252,7 @@ class TaskbarWidget(QWidget):
             if index:
                 width += 14  # gap between groups
             if label:
-                width += 10 + metrics.horizontalAdvance(label) + 4
+                width += 10 + metrics.horizontalAdvance(label) + metrics.horizontalAdvance(" ")
             width += metrics.horizontalAdvance(value)
         width += 8
 
@@ -298,7 +288,7 @@ class TaskbarWidget(QWidget):
                 x += dot_r * 2 + 4
                 p.setPen(dim)
                 p.drawText(int(x), baseline, label)
-                x += metrics.horizontalAdvance(label) + 6
+                x += metrics.horizontalAdvance(label) + metrics.horizontalAdvance(" ")
 
             p.setPen(QColor(color))
             p.drawText(int(x), baseline, value)

@@ -2,12 +2,10 @@
 
 ```python
 pip install -r requirements-desktop.txt
-python run.py             # 启动托盘监控
-python run.py --install   # 安装开机自启动
-python run.py --uninstall # 卸载自启动
-
+python main.py             # 启动托盘监控
+python main.py --install   # 安装开机自启动
+python main.py --uninstall # 卸载自启动
 ```
-
 
 PyInstaller 的核心逻辑只有一句：**在目标系统上，把 Python 解释器和所有依赖"冻"进一个包里，用户不用装 Python 也能跑**。下面按"跑通 → 常用参数 → 踩坑"的顺序给你。
 
@@ -41,19 +39,17 @@ pyinstaller --onefile app.py       # 单文件：dist/app（Windows 下 app.exe�
 
 ## 二、常用参数速查
 
-| 参数 | 简写 | 作用 |
-|---|---|---|
-| `--onefile` | `-F` | 打成单个 exe，交付干净，但每次启动要解压到临时目录，**启动慢一截** |
-| `--onedir` | `-D` | 默认。文件夹模式，启动快、依赖摊开好排查 |
-| `--windowed` / `--noconsole` | `-w` | 隐藏控制台窗口，**GUI 程序用**；命令行工具千万别加，否则报错都看不见 |
-| `--name` | `-n` | 指定产物名 |
-| `--icon` | `-i` | 图标：Windows 用 `.ico`，macOS 用 `.icns` |
-| `--add-data` | | 带非 py 文件（配置、模板、图片），`源:目标`；**Windows 用分号 `;`，macOS/Linux 用冒号 `:`** |
-| `--hidden-import` | | 手动补静态分析扫不到的动态导入 |
-| `--exclude-module` | | 剔掉不要的模块（瘦身利器） |
-| `--clean` / `--noconfirm` | `-y` | 清缓存 / 不询问直接覆盖 |
-
-
+| 参数                             | 简写   | 作用                                                                                                    |
+| -------------------------------- | ------ | ------------------------------------------------------------------------------------------------------- |
+| `--onefile`                    | `-F` | 打成单个 exe，交付干净，但每次启动要解压到临时目录，**启动慢一截**                                |
+| `--onedir`                     | `-D` | 默认。文件夹模式，启动快、依赖摊开好排查                                                                |
+| `--windowed` / `--noconsole` | `-w` | 隐藏控制台窗口，**GUI 程序用**；命令行工具千万别加，否则报错都看不见                              |
+| `--name`                       | `-n` | 指定产物名                                                                                              |
+| `--icon`                       | `-i` | 图标：Windows 用 `.ico`，macOS 用 `.icns`                                                           |
+| `--add-data`                   |        | 带非 py 文件（配置、模板、图片），`源:目标`；**Windows 用分号 `;`，macOS/Linux 用冒号 `:`** |
+| `--hidden-import`              |        | 手动补静态分析扫不到的动态导入                                                                          |
+| `--exclude-module`             |        | 剔掉不要的模块（瘦身利器）                                                                              |
+| `--clean` / `--noconfirm`    | `-y` | 清缓存 / 不询问直接覆盖                                                                                 |
 
 ### 一个贴近真实的完整命令
 
@@ -116,12 +112,12 @@ pyinstaller --hidden-import=pandas --hidden-import=myplugin.app app.py
 
 ## 四、按场景选模式
 
-| 场景 | 推荐 | 原因 |
-|---|---|---|
-| GUI 桌面应用、正式对外发布 | **onedir** | 启动快，崩了好定位；macOS 尤其别用 onefile（官方明确不推荐 onefile + .app 组合，签名/公证会出问题） |
-| 内部小工具、命令行脚本 | **onefile** | 发一个文件过去体验最好 |
-| 用了 PyQt / Tkinter | onedir + `--windowed` + 剔 Qt 翻译和无关插件 | Qt 全家桶动辄 120MB，排除后能压到 40–60MB |
-| 用了 `multiprocessing` | 入口第一行加 `multiprocessing.freeze_support()` | 否则 Windows 下会**无限孵化子进程**把 CPU 打满 |
+| 场景                       | 推荐                                              | 原因                                                                                                |
+| -------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| GUI 桌面应用、正式对外发布 | **onedir**                                  | 启动快，崩了好定位；macOS 尤其别用 onefile（官方明确不推荐 onefile + .app 组合，签名/公证会出问题） |
+| 内部小工具、命令行脚本     | **onefile**                                 | 发一个文件过去体验最好                                                                              |
+| 用了 PyQt / Tkinter        | onedir + `--windowed` + 剔 Qt 翻译和无关插件    | Qt 全家桶动辄 120MB，排除后能压到 40–60MB                                                          |
+| 用了 `multiprocessing`   | 入口第一行加 `multiprocessing.freeze_support()` | 否则 Windows 下会**无限孵化子进程**把 CPU 打满                                                |
 
 **心法：先用 onedir 跑通调好，确认一切正常再切 onefile。** 文件夹模式下依赖摊在明面上，出问题时能一眼对照。
 
@@ -151,10 +147,10 @@ pyinstaller --onedir --windowed --clean --noconfirm app.py
 
 ## 七、如果 PyInstaller 搞不定
 
-| 工具 | 特点 |
-|---|---|
-| **Nuitka** | 把 Python 编译成 C 再编二进制，**真编译**、启动快、反编译难、体积更小，代价是构建慢、偶尔要调 C 编译器 |
-| **cx_Freeze** | 老牌，跨平台，配置偏手写 setup.py |
-| **PyOxidizer** | Rust 写的，极致单文件，但生态和踩坑成本更高 |
+| 工具                 | 特点                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Nuitka**     | 把 Python 编译成 C 再编二进制，**真编译**、启动快、反编译难、体积更小，代价是构建慢、偶尔要调 C 编译器 |
+| **cx_Freeze**  | 老牌，跨平台，配置偏手写 setup.py                                                                            |
+| **PyOxidizer** | Rust 写的，极致单文件，但生态和踩坑成本更高                                                                  |
 
 需要我针对你的具体场景给一份可直接用的命令吗？告诉我：**GUI 还是命令行（Tkinter/PyQt/FastAPI？）、目标系统、有没有带数据文件或模型权重**，我给你把 spec 文件和 `resource_path` 那套一起写出来。
