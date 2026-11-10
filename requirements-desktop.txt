@@ -1,0 +1,6 @@
+# Standalone tray monitor (does not need ComfyUI / torch)
+psutil>=5.9
+PySide6>=6.5
+nvidia-ml-py>=12.535.108; platform_system != 'Darwin'
+websocket-client>=1.6
+Pillow>=9.0
